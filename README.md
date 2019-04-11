@@ -1,6 +1,6 @@
-# :radio_button: ng-current
+# :radio_button: ng-contexts
 
-> Relational context manager for Angular 1.x
+> Managing selected state in AngularJS applications
 
 ## tl;dr
 
@@ -99,7 +99,7 @@ and involves no polling mechanisms whatsoever.
 
 ## Usage
 
-`ng-current` allows you to define a hierarchy of related contexts that that synchronize
+`ng-contexts` allows you to define a hierarchy of related contexts that that synchronize
 with your already-existant `Service`s and components non-invasively.
 
 By establishing the following properties:
@@ -214,29 +214,29 @@ To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p
 
 ## Installation
 
-`npm install ng-current`
+`npm install ng-contexts`
 
 **ES5**
 ```javascript
-var Current = require('ng-current')
+var Current = require('ng-contexts')
 ```
 
 **ES6**
 ```javascript
-import Current from 'ng-current'
+import Current from 'ng-contexts'
 ```
 
-**Be sure to require `angular` first** so that it's accessible to `ng-current`:
+**Be sure to require `angular` first** so that it's accessible to `ng-contexts`:
 
 ```javascript
 import angular
-import Current from 'ng-current'
+import Current from 'ng-contexts'
 ```
 
 Then add it to your own module:
 
 ```javascript
-angular.module('myModule', ['ng-current'])
+angular.module('myModule', ['ng-contexts'])
 ```
 
 ---
@@ -245,10 +245,10 @@ If you aren't using a package tool like `webpack` or `browserify`, then you can 
 
 **Full**
 ```html
-<script type="text/javascript" src="/node_modules/ng-current/ng-current.js"></script>
+<script type="text/javascript" src="/node_modules/ng-contexts/ng-contexts.js"></script>
 ```
 
 **Minified**
 ```html
-<script type="text/javascript" src="/node_modules/ng-current/ng-current.min.js"></script>
+<script type="text/javascript" src="/node_modules/ng-contexts/ng-contexts.min.js"></script>
 ```

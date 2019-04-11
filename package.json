@@ -1,15 +1,15 @@
 {
-  "name": "ng-current",
-  "version": "1.0.13",
-  "description": "Relational context manager for Angular",
-  "main": "ng-current.js",
+  "name": "ng-contexts",
+  "version": "1.1.0",
+  "description": "Managing selected state in AngularJS applications",
+  "main": "ng-contexts.js",
   "scripts": {
     "test": "npm test",
-    "ugly": "uglify -s ng-current.js -o ng-current.min.js"
+    "ugly": "uglify -s ng-contexts.js -o ng-contexts.min.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/slurmulon/ng-current.git"
+    "url": "git+https://github.com/tonybrasunas-sighten/ng-contexts.git"
   },
   "keywords": [
     "relational",
@@ -18,12 +18,12 @@
     "sub",
     "angular"
   ],
-  "author": "slurmulon",
+  "author": "tonybrasunas-sighten",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/slurmulon/ng-current/issues"
+    "url": "https://github.com/tonybrasunas-sighten/ng-contexts/issues"
   },
-  "homepage": "https://github.com/slurmulon/ng-current#readme",
+  "homepage": "https://github.com/tonybrasunas-sighten/ng-contexts#readme",
   "devDependencies": {
     "bower": "^1.7.7",
     "uglify": "^0.1.5"

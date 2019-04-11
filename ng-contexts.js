@@ -1,7 +1,7 @@
 ;(function(angular) {
   'use strict'
 
-  var mod = angular.module('ng-current', [])
+  var mod = angular.module('ng-contexts', [])
 
   /**
    * Establishes a relational context that delegates
@@ -29,7 +29,7 @@
     /**
      * Registers a service as a context and subscribes the provided
      * service's model to its own changes
-     * 
+     *
      * @param {Object} service typically `this` of the service
      */
     this.register = function(service) {
@@ -44,14 +44,14 @@
       service.use     = self.using(service)
 
       service.$$hasContext = true
-      
+
       $rootScope.current[name] = {}
     }
-    
+
     /**
      * Creates a generator that allows users to provide
      * a binding function that reacts to a single Service's
-     * changes (in other words, lazy functionality or data 
+     * changes (in other words, lazy functionality or data
      * that needs to re-process when data changes).
      *
      * @param {Service} angular service
@@ -70,10 +70,10 @@
               )
             })
             .catch(function(error) {
-              $log.error('[ng-current.refreshing] failed to refresh Service integration point', error)
+              $log.error('[ng-contexts.refreshing] failed to refresh Service integration point', error)
             })
         } else {
-          $log.error('[ng-current.refreshing] failed to find method on service', method)
+          $log.error('[ng-contexts.refreshing] failed to find method on service', method)
         }
       }).bind(service)
     }
@@ -110,7 +110,7 @@
             }
           })
         } else {
-          $log.error('[ng-current.using] malformed Service context, please ensure you have added `Contexts.register(this)` at the end of this service', service)
+          $log.error('[ng-contexts.using] malformed Service context, please ensure you have added `Contexts.register(this)` at the end of this service', service)
         }
       }).bind(service)
     }
@@ -119,25 +119,25 @@
      * Clears out a context's current state and then traverses its
      * relationships recursively until all dependent states have
      * been cleared as well.
-     * 
+     *
      * @param {string} name service name
      */
     this.clear = function(name) {
       (self.contexts[name] || []).forEach(function(rel) {
         delete $rootScope.current[rel]
-        
+
         var next = self.contexts[rel]
-        
+
         if (next instanceof Array && next.length) {
           next.forEach(self.clear)
         }
       })
     }
-    
+
     /**
      * Establishes a new current context for
      * a service by name/rel and publishes event
-     * 
+     *
      * @param {string} name service name
      * @param {*} data arbitrary data to select
      * @param {boolean} [force] publish update even if the data is unchanged
@@ -154,11 +154,11 @@
         }
 
         $rootScope.current[name] = data
-        
+
         // ensure all related (and stale) rel contexts are
         // cleared when this a new context becomes current
         self.clear(name)
-        
+
         // notify related contexts about your new state
         self.publish(name, data)
       }
@@ -178,7 +178,7 @@
 
       return model === false ? state : this.models[name](state || {})
     }
-    
+
     /**
      * Utility function that provides either the current context (by name)
      * or, if the context has not been established yet, the `none` object.
@@ -209,7 +209,7 @@
      * Subscribes to a specific relation, performing
      * the user provided behavior whenever a related
      * publication occurs
-     * 
+     *
      * @param {string} rel relation to subscribe to
      * @param {Function} on behavior to invoke on publication
      */
@@ -218,12 +218,12 @@
         on(data || {}, event)
       })
     }
-    
+
     /**
      * Publishes data to a service by its registered "rel".
      * If the service has any "rels", publish to those as well.
      * This process does not repeat (shallow)
-     * 
+     *
      * @param {string} rel the relation
      * @param {Object} data
      */
@@ -247,5 +247,5 @@
 })(angular)
 
 if (module && exports && module.exports === exports) {
-  module.exports = 'ng-current'
+  module.exports = 'ng-contexts'
 }

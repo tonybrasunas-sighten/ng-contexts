@@ -1,8 +1,9 @@
 {
-  "name": "ng-current",
-  "description": "Relational context manager for Angular",
-  "main": "ng-current.js",
+  "name": "ng-contexts",
+  "description": "Managing selected state in AngularJS applications",
+  "main": "ng-contexts.js",
   "authors": [
+    "tonybrasunas-sighten",
     "slurmulon"
   ],
   "license": "MIT",
@@ -13,7 +14,7 @@
     "sub",
     "angular"
   ],
-  "homepage": "https://github.com/slurmulon/ng-current",
+  "homepage": "https://github.com/tonybrasunas-sighten/ng-contexts",
   "moduleType": [],
   "private": true,
   "ignore": [
@@ -27,3 +28,4 @@
     "angular": "^1.5.3"
   }
 }
+

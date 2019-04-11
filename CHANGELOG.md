@@ -1,3 +1,8 @@
+# 1.1.0
+ - Forked! :fork:
+ - New author! :pencil:
+ - Rename to ng-contexts :tada:
+
 # 1.0.10
 
  - Added function this bindings to behave more lexically (use of `.bind(service)`)
