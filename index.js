@@ -1,4 +1,2 @@
-// example: https://github.com/brandly/angular-youtube-embed
-
-require('./src/ng-contexts');
+require('./ng-contexts');
 module.exports = 'ng-contexts';

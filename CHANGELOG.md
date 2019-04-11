@@ -1,4 +1,7 @@
-# 1.1.1
+# 1.1.3
+ - Cleanup export from `index.js` for applications that pre-check resolve
+
+ # 1.1.1
  - Add and expose `modify()`, `selected()`, and `exists()` methods, bound to the service
  - Expose `clear()` as well
  - Add handling for removing `$rootScope` listeners via `unsubscribe()` method
