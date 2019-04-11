@@ -1,3 +1,8 @@
+# 1.1.1
+ - Add and expose `modify()`, `selected()`, and `exists()` methods, bound to the service
+ - Expose `clear()` as well
+ - Add handling for removing `$rootScope` listeners via `unsubscribe()` method
+
 # 1.1.0
  - Forked! :fork:
  - New author! :pencil:
