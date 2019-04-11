@@ -40,8 +40,21 @@
         return self.select.apply(service, [service.name].concat(Array.prototype.slice.call(arguments)))
       }
 
-      service.refresh = self.refreshing(service)
-      service.use     = self.using(service)
+      service.refresh  = self.refreshing(service)
+      service.use      = self.using(service)
+      service.modify   = self.modifying(service)
+
+      service.selected = function() {
+        return self.getOr(service.name, false)
+      }
+
+      service.exists   = function() {
+        return self.existing(service.name, false)
+      }
+
+      service.clear    = function() {
+        return self.clear(service.name)
+      }
 
       service.$$hasContext = true
 
@@ -60,7 +73,7 @@
     this.refreshing = function(service) {
       return (function(method, andThen) {
         var generator = method instanceof Function ? method.call(service, service) : service[method].bind(service)
-        var model     = service.model || noop
+        var model     = service.model || function(data) { return data }
 
         if (generator instanceof Function) {
           $q.when(generator.call(service))
@@ -102,7 +115,7 @@
           self.subscribe(service.name, function(data) {
             service.refresh(method, andThen)
 
-            // delegate subscribed changes to immediate related contexts (shallow)
+            /* delegate subscribed changes to immediate related contexts (shallow) */
             if (service.rels && service.rels.length) {
               service.rels.forEach(function(rel) {
                 self.publish(rel, data)
@@ -116,22 +129,32 @@
     }
 
     /**
-     * Clears out a context's current state and then traverses its
-     * relationships recursively until all dependent states have
-     * been cleared as well.
+     * Traverse a context's current state relationships recursively
+     * until all dependent states have been cleared. When not called
+     * from select(), clear the context itself as well.
      *
-     * @param {string} name service name
+     * @param {string} name: service name
+     * @param {bool} clearSelf: whether to clear the calling context too
+     * @param {bool} clearListener: whether to clear $rootScope listeners for this context too
      */
-    this.clear = function(name) {
-      (self.contexts[name] || []).forEach(function(rel) {
+    this.clear = function(name, clearSelf = true, clearListener = true) {
+      var rels = self.contexts[name] || []
+      rels.forEach(function(rel) {
         delete $rootScope.current[rel]
 
         var next = self.contexts[rel]
 
         if (next instanceof Array && next.length) {
-          next.forEach(self.clear)
+          next.forEach(function(childRel) {
+            self.clear(childRel, clearSelf, clearListener)
+          })
         }
       })
+
+      if (clearSelf) delete $rootScope.current[name]
+
+      if (clearListener) self.unsubscribe(name)
+
     }
 
     /**
@@ -145,25 +168,70 @@
      * @param {Object} object to use as representation of current state
      */
     this.select = function(name, data, force, model) {
+
       var old = $rootScope.current[name]
 
-      // only publish update if the current value has changed
+      /* Publish update if the current data has changed or forced */
       if (!angular.equals(data, old) || force) {
         if (model) {
-          data = this.models[name](data) // FIXME - use $rootScope.context instead
+          data = self.models[name](data)
         }
 
         $rootScope.current[name] = data
 
-        // ensure all related (and stale) rel contexts are
-        // cleared when this a new context becomes current
-        self.clear(name)
+        /* Clear related (and stale) contexts as new context becomes current */
+        self.clear(name, false, false)
 
-        // notify related contexts about your new state
+        /* Publish new state to related contexts */
         self.publish(name, data)
       }
 
       return data
+    }
+
+
+    /**
+     * Determines whether there is a selected context
+     *
+     * @param {string} uuid
+     * @returns {boolean}
+     */
+    this.existing = function(name, none = false) {
+      var current = this.currentOr(name, none)
+
+      /* @TODO More robust check than just truthiness of uuid */
+      return current && !!current.uuid
+    }
+
+    /**
+     * Returns the selected "current" data instance relevant to the Service
+     * If none can be found, return false
+     *
+     * @returns {obj} current entity instance
+     */
+    this.selected = function(name, none = false) {
+      return this.currentOr(name, none)
+    }
+
+    /**
+     * Updates the "current" entity instance relevant to the Service
+     * If none can be found, log error and return false
+     *
+     * @param {obj} updates - the data to add or amend on the entity
+     * @param {bool} publish - whether to initiate a publish
+     * @returns {obj} updated entity instance
+     */
+    this.modifying = function(service) {
+      return function(updates, publish = false) {
+        if (this.exists()) {
+          var current = this.selected()
+          var updated = Object.assign(current, updates)
+
+          if (publish) self.publish(service.name, updated)
+
+          return updated
+        }
+      }
     }
 
     /**
@@ -217,6 +285,15 @@
       $rootScope.$on(rel, function(event, data) {
         on(data || {}, event)
       })
+    }
+
+    /**
+     * Removes all $rootScope subscriptions for the given context
+     *
+     * @param {string} rel - relation to remove listens for
+     */
+    this.unsubscribe = function(rel) {
+      $rootScope.$$listeners[rel] = []
     }
 
     /**
