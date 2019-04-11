@@ -1,11 +1,11 @@
 {
   "name": "ng-contexts",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Managing selected state in AngularJS applications",
   "main": "ng-contexts.js",
   "scripts": {
     "test": "npm test",
-    "ugly": "uglify -s ng-contexts.js -o ng-contexts.min.js"
+    "minify": "minify ng-contexts.js --out-file ng-contexts.min.js --mangle.keepClassName"
   },
   "repository": {
     "type": "git",
@@ -25,8 +25,8 @@
   },
   "homepage": "https://github.com/tonybrasunas-sighten/ng-contexts#readme",
   "devDependencies": {
-    "bower": "^1.7.7",
-    "uglify": "^0.1.5"
+    "babel-minify": "^0.5.0",
+    "bower": "^1.7.7"
   },
   "dependencies": {
     "angular": "^1.5.3"
