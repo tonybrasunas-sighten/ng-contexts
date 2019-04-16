@@ -141,6 +141,7 @@
       var rels = self.contexts[name] || []
       rels.forEach(function(rel) {
         delete $rootScope.current[rel]
+        if (clearListener) self.unsubscribe(rel)
 
         var next = self.contexts[rel]
 
