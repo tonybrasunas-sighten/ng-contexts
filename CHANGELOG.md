@@ -1,3 +1,6 @@
+# 1.1.4
+ - Ensure `.clear()` will clear top level listeners unless told not to.
+
 # 1.1.3
  - Cleanup export from `index.js` for applications that pre-check resolve
 
