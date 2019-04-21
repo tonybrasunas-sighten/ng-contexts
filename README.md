@@ -196,7 +196,7 @@ module.directive('currentQuote', function(Contexts, Quote, $log) {
   }
 })
 ```
-To see a working example, check out [this Plunker](http://plnkr.co/edit/dyoDC72r3nNke6p2WaJR?p=preview).
+<!--To see a working example, check out [this Plunker](http://plnkr.co/edit/dyoDC72r3nNke6p2WaJR?p=preview).-->
 
 ## Installation
 
@@ -204,12 +204,12 @@ To see a working example, check out [this Plunker](http://plnkr.co/edit/dyoDC72r
 
 **ES5**
 ```javascript
-var Current = require('ng-contexts')
+var Contexts = require('ng-contexts')
 ```
 
 **ES6**
 ```javascript
-import Current from 'ng-contexts'
+import Contexts from 'ng-contexts'
 ```
 
 **Be sure to require `angular` first** so that it's accessible to `ng-contexts`:
