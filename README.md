@@ -1,23 +1,23 @@
-# :tree: ng-contexts
+# :evergreen_tree: ng-contexts
 
 > Intuitive state management for AngularJS applications
 
-## tl;dr
+## TL;DR
 
 `Contexts` define the selected state of your application.
 
-The original `ng-current` plug-in provides these benefits:
+The original plug-in provides these benefits:
  * :sparkles: Transparent management of context-based states of your interdependent `Services` and their related components.
  * :art: Non-invasive implementation. A "convention over configuration" approach that allows you to choose how to integrate and when to use.
- * :rocket: Fast, efficient and lazy - based on native PubSub, minimizing the complexity and size of the `$digest` cycle (check out [this post on `$broadcast`](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm) for details)
- * :cloud: Light-weight - just over 200 lines of code and only 1.9KB uglified!
+ * :rocket: Fast, efficient and lazy - based on native PubSub, minimizing the complexity and size of the `$digest` cycle (check out [this post on `$broadcast`](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm))
+ * :cloud: Light-weight - just 320 lines of code and under 3KB minified!
 
-This fork, `ng-contexts`, adds features:
+This fork, `ng-contexts`, adds several features:
   * :smile: Additional exposed functions for convenience, clarity, and power (`modify()`, `selected()`, `exists()`, `clear()`, etc.)
-  * :silent: Ability to clear listeners left over when components are removed from the DOM
+  * :mute: Ability to clear listeners left over when components are removed from the DOM
 
 ## Problem
-A good description of the problem of intuitively and comprehensively managing selected state in Angular 1.x here.
+A good description of the problem of intuitively and comprehensively managing selected state in Angular 1.x [is here](https://github.com/slurmulon/ng-current#problem).
 
 ## Usage
 
@@ -42,14 +42,14 @@ That's it, that's the minimum configuration needed. You'll likely want to establ
 #### Utilizing Exposed Functions
 Once your tree is configured and you want to begin storing and working with selected state, these functions will be useful. They may be called directly in the relevant service or via injecting the service (or the `Contexts` service) into your controllers.
 
-  - `select()` - Selects an entity for the context. If the entity's data is different from the existing selected data, this will publish to the tree and clear any nodes below it. Takes `Object` param which will overwrite/add to the selected entity any properties included on the object. Additional boolean `force` parameter will trigger a publish even if the data is not different.
-  - `use()` - Subscribes to a function and will execute a callback when the function's value changes. Similar to Angular's `$scope.$watch` in creating a subscription to a data entity. Takes a `Function` name param for the function to use to determine whether data has changed. Takes second `Function` parameter which is the callback to be executed. Additional optional boolean `defer` param will prevent the callback from executing when the `use()` is first called.
-  - `modify()` - Update selected data for a context without subscribing or publishing. Avoids triggering updates to the tree. Takes `Object` param which will overwrite/add to the selected entity any properties included on the object. Additional boolean `publish` parameter will trigger publish of the entity to the tree.
-  - `exists()` - Returns a simple boolean value if there is a selected entity for the context. *Note: Uses the `uuid` property to avoid false positives when functions have been added via `model()` but no entity is selected.*
-  - `get()` - Returns the selected entity. Takes a `String` parameter of the name of the entity.
-  - `getOr()` - Returns the selected entity, or an alternative value if `exists()` is false. Takes a `String` parameter of the name of the entity, and a second parameter for what to return if `exists()` is false.
-  - `selected()` - Returns the selected data entity for the service. Doesn't need a parameter. Shorthand for `Contexts.get([context.name])`
-  - `clear()` - Explicitly clear all `select()` data and `use()` subscriptions for the service.
+  - `this.select()` - Selects an entity for the context. If the entity's data is different from the existing selected data, this will publish to the tree and clear any nodes below it. Takes `Object` param which will overwrite/add to the selected entity any properties included on the object. Additional boolean `force` parameter will trigger a publish even if the data is not different.
+  - `this.use()` - Subscribes to a function and will execute a callback when the function's value changes. Similar to Angular's `$scope.$watch` in creating a subscription to a data entity. Takes a `Function` name param for the function to use to determine whether data has changed. Takes second `Function` parameter which is the callback to be executed. Additional optional boolean `defer` param will prevent the callback from executing when the `use()` is first called.
+  - `this.modify()` - Update selected data for a context without subscribing or publishing. Avoids triggering updates to the tree. Takes `Object` param which will overwrite/add to the selected entity any properties included on the object. Additional boolean `publish` parameter will trigger publish of the entity to the tree.
+  - `this.exists()` - Returns a simple boolean value if there is a selected entity for the context. *Note: Uses the `uuid` property to avoid false positives when functions have been added via `model()` but no entity is selected.*
+  - `this.get()` - Returns the selected entity. Takes a `String` parameter of the name of the entity.
+  - `this.getOr()` - Returns the selected entity, or an alternative value if `exists()` is false. Takes a `String` parameter of the name of the entity, and a second parameter for what to return if `exists()` is false.
+  - `this.selected()` - Returns the selected data entity for the service. Doesn't need a parameter. Shorthand for `Contexts.get([context.name])`
+  - `this.clear()` - Explicitly clear all `select()` data and `use()` subscriptions for the service.
 
 
 ## Example
@@ -196,8 +196,7 @@ module.directive('currentQuote', function(Contexts, Quote, $log) {
   }
 })
 ```
-
-To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p=preview).
+To see a working example, check out [this Plunker](http://plnkr.co/edit/dyoDC72r3nNke6p2WaJR?p=preview).
 
 ## Installation
 
