@@ -1,45 +1,61 @@
-# :radio_button: ng-contexts
+# :tree: ng-contexts
 
-> Managing selected state in AngularJS applications
+> Intuitive state management for AngularJS applications
 
 ## tl;dr
 
- * :sparkles: Transparently manage the context-based states of your interdependent `Services` and their related components
- * :art: Non-invasive (convention over configuration) - choose how to integrate and when to use
+`Contexts` define the selected state of your application.
+
+The original `ng-current` plug-in provides these benefits:
+ * :sparkles: Transparent management of context-based states of your interdependent `Services` and their related components.
+ * :art: Non-invasive implementation. A "convention over configuration" approach that allows you to choose how to integrate and when to use.
  * :rocket: Fast, efficient and lazy - based on native PubSub, minimizing the complexity and size of the `$digest` cycle (check out [this post on `$broadcast`](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm) for details)
- * :cloud: Light-weight and simple - just over 200 lines of code and only 1.9KB uglified!
+ * :cloud: Light-weight - just over 200 lines of code and only 1.9KB uglified!
+
+This fork, `ng-contexts`, adds features:
+  * :smile: Additional exposed functions for convenience, clarity, and power (`modify()`, `selected()`, `exists()`, `clear()`, etc.)
+  * :silent: Ability to clear listeners left over when components are removed from the DOM
 
 ## Problem
+A good description of the problem of intuitively and comprehensively managing selected state in Angular 1.x here.
 
-Have you ever encountered challenges or annoyances with managing
-your Angular 1.X application's context of related **currently selected `Service` entities**?:
+## Usage
 
- * Dangling references to stale data in directives and views
-    - Example: The data of the last user still displaying after you re-authenticated as a new user
- * Needing to use `$watch` to ensure new defaults are selected properly
-    - Example: A user has quotes, and if you switch users but are still viewing quotes (or even a component distantly related to quotes), you will need to select a new "current" quote and ensure that these components are synchronized properly
- * Functions getting called excessively on the `$digest` cycle in order to help guarantee the "latest and greatest"
- * Needing to "drag along" related user selections across `Services` and other components in order to support state-dependent features that become relevant at a later point
- * Tracking current entities in vanilla `Services`, which by design, do not integrate with the `$digest` cycle and often result in one or more of the aforementioned issues
+#### Initial Service Configuration
+
+`ng-contexts` enables you to define a "state tree" -- a hierarchy of related contextualized data objects that synchronize
+with your already-existant `Service`s and components, non-invasively.
+
+To include a `Service` in your tree, simply establish the following properties on a service:
+ * `this.name` (**required**) a unique name to identify the service (often lowercase version of service)
+ * `this.model` (*optional*) pseudo-constructor function that's refreshed on updates to your Service entities
+ * `this.rels` (*optional*) collection of immediate child entities, order independent
+ * `this.all` (*optional*) function that will retrieve all potential Service entities that can be selected
+ * `this.current` (*optional*) function to determine the current selected entity
+
+And then inject `Contexts` and register the service at the end of your definition:
+
+  `Contexts.register(this)`
+
+That's it, that's the minimum configuration needed. You'll likely want to establish `this.all()` and `this.current()` functions only once in your application if you're creating a canonical method to fetch and select entities. If so, these functions can be defined in a shared service and inherited in your individual services.
+
+#### Utilizing Exposed Functions
+Once your tree is configured and you want to begin storing and working with selected state, these functions will be useful. They may be called directly in the relevant service or via injecting the service (or the `Contexts` service) into your controllers.
+
+  - `select()` - Selects an entity for the context. If the entity's data is different from the existing selected data, this will publish to the tree and clear any nodes below it. Takes `Object` param which will overwrite/add to the selected entity any properties included on the object. Additional boolean `force` parameter will trigger a publish even if the data is not different.
+  - `use()` - Subscribes to a function and will execute a callback when the function's value changes. Similar to Angular's `$scope.$watch` in creating a subscription to a data entity. Takes a `Function` name param for the function to use to determine whether data has changed. Takes second `Function` parameter which is the callback to be executed. Additional optional boolean `defer` param will prevent the callback from executing when the `use()` is first called.
+  - `modify()` - Update selected data for a context without subscribing or publishing. Avoids triggering updates to the tree. Takes `Object` param which will overwrite/add to the selected entity any properties included on the object. Additional boolean `publish` parameter will trigger publish of the entity to the tree.
+  - `exists()` - Returns a simple boolean value if there is a selected entity for the context. *Note: Uses the `uuid` property to avoid false positives when functions have been added via `model()` but no entity is selected.*
+  - `get()` - Returns the selected entity. Takes a `String` parameter of the name of the entity.
+  - `getOr()` - Returns the selected entity, or an alternative value if `exists()` is false. Takes a `String` parameter of the name of the entity, and a second parameter for what to return if `exists()` is false.
+  - `selected()` - Returns the selected data entity for the service. Doesn't need a parameter. Shorthand for `Contexts.get([context.name])`
+  - `clear()` - Explicitly clear all `select()` data and `use()` subscriptions for the service.
 
 
-Managing this current context is trivial when you're only working
-with a single disjoint entity (say for instance, an extremely basic `User`),
-especially when you can determine the state from a canonical source like a URL:
+## Example
+Below is a simple use case and implementation. We're managing a dynamic selected state for solar sales software, where our relevant services are: Users, Sites, Contacts, and Quotes. Each user can have multiple sites and contacts, and each site can have multiple quotes.
 
-```
-http://example.io/user/3449538
-```
-
-However, modern web applications are typically more complicated
-and almost always involve multiple relationships and/or hierarchies
-between resource and/or `Service` entities.
-
-For example, a `User` of say a construction management portal may add `Contact`s and be able
-to generate multiple construction `Sites`, each which may have multiple `Quotes`. It is often
-the case that one entity of each type may be currently selected in the
-application at a time (like when viewing a specific `Quote`, the others
-are arguably irrelevant):
+We establish a contexts tree like this:
 
 ```
                                  User
@@ -54,71 +70,17 @@ are arguably irrelevant):
                  Quote
 ```
 
-As an application grows, it typically becomes unorthodox to
-place every relevant entity's identification info in the URL:
-
-```
-http://example.io/user/3449538/quote/34324234/site/9883748
-```
-
-One can argue that since the IDs should be unique across the API,
-the above URL should be reducible to:
-
-```
-http://exaple.io/site/9883748
-```
-In other words, you should only need to know the last entity
-in the chain since all of the others can be inferred from it.
-
-Deriving the other entities in this way can become difficult. For instance, a user can technically visit the page from any other page, and thus the proper state of the new page must be accessible and/or determinable from the state of any page preceding it (assuming all data is loaded asynchronously, satisfying SPA)
-
-This issue is not unique URL/cache-based state systems - it presents itself anytime a hierarchy of non-canonical entity states needs to be managed.
-
-Tools such as `angular-ui-router` have some success with alleviating this, but in my experience force the user to be overly verbose with redundant generator methods, and worse of all needing to jump through several hoops in order to make the correct data/state accessible to deeply nested components. This stems from the fact that state (and thus isolated scope-bound instances of Services) is exclusively controlled by the current `URL`, and this often makes supporting contextual features that don't quite fit into the URL scheme difficult and complex.
-
-### Multiple "Current"s
-
-In order to track the other selected entities (such as `Site` and `Quote`),
-you have a couple of idiomatic options:
-
- * `Provider`, `Service`, or `Factory` (which by design do NOT
-integrate with the `$digest` cycle)
- * Use session storage (same problem as `Provider`)
- * Use `$rootScope` which sacrifices readibility and, justifiably, makes most developers cringe
-
-These can be tolerated for a while, but pretty much all of these will require either the
-use of `$watch`, monolthic controllers, or repetitive/redundant bindings throughout the app in order to guarantee that your components show only the data that is relevant to the user's current selections (at least without forcing a page refresh,
-which breaks SPA and in my opinion damages the user experience and quality of your application).
-
----
-
-More examples on the challenges involved with SPAs can be
-found in [Gooey's README](https://github.com/slurmulon/gooey). Gooey is a small JS library
-that takes a hierarchical, bi-directional PubSub approach for generic data synchronization
-and involves no polling mechanisms whatsoever.
-
-## Usage
-
-`ng-contexts` allows you to define a hierarchy of related contexts that that synchronize
-with your already-existant `Service`s and components non-invasively.
-
-By establishing the following properties:
- * `this.name` (**required**) a unique name to identify the service (often lowercase version of service)
- * `this.model` (optional) pseudo-constructor function that's refreshed on updates to your Service entities
- * `this.rels` (optional) collection of immediate child entities, order independent
-
-and then registering the service at the end of your definition:
+We configure our Services to establish this tree.
 
 ```javascript
-// inject `Contexts` service which serves as a transparent state orchestrator for our `Service`(s)
+/* First, inject `Contexts` service */
 module.service('User', function(Contexts) {
   var self = this
 
-  this.name = 'user'              // rel name to use as primary lookup and to establish relations
-  this.rels = ['site', 'contact'] // services that have an immediate relationship / dependency to this service
+  this.name = 'user'              // name to use as primary lookup and to establish relations
+  this.rels = ['site', 'contact'] // define the tree of services that have an immediate relationship
 
-  this.model = function(user) {
-    // model logic for a single `User` entity
+  this.model = function(user) {   // model logic for a single `User` entity
 
     user.firstName = function() {
       return user.givenName + ' ' + user.familyName
@@ -127,11 +89,13 @@ module.service('User', function(Contexts) {
     return user
   }
 
-  // arbitrary user defined generator method -
-  // typically something using `$http` or `$resource` with cache.
-  // multiple users are considered here because
-  // more than one user may use the application
-  // in a single window session (asynchronous re-authentication)
+  /*
+   * User defined generator method to fetch all potential entities to select.
+   * Typically something using `$http` or `$resource` with cache.
+   * multiple users are considered here because
+   * more than one user may use the application
+   * in a single window session (asynchronous re-authentication)
+   */
   this.all = function() {
     return [
       {id: 1, name: 'bob'},
@@ -139,23 +103,27 @@ module.service('User', function(Contexts) {
     ]
   }
 
-  // defines how to determine the "current" user -
-  // can be from url, a token, anything!
-  // because I'm lazy, this example simply
-  // returns the first in the array
+  /*
+   * User defined method to determine the "current" user.
+   * Can be via a url, a token, anything!
+   * Here we're lazy and if there isn't already a selected entity, we're
+   * simply returning the first element in the array.
+   */
   this.current = function() {
     return self.all().then(function(users) {
       return Contexts.getOr('user', users[0])
     })
   }
 
-  // required as the final statement of your `Service`.
-  // registers your Service with the global pool
+  /*
+   * Required registration as the final statement of your `Service`.
+   * registers your Service with the global "tree" of contexts
+   */
   Contexts.register(this)
 })
 ```
 
-We must also define `Site`, `Contact` and `Quote` services that resemble `User`, but are of course free to have their own implementations and functionality:
+We would now also define `Site`, `Contact` and `Quote` services that resemble `User`. Each of course is free to have its own implementation and functionality. Let's just look at `Site`:
 
 ```javascript
 module.service('Site', function(Contexts) {
@@ -173,6 +141,7 @@ module.service('Site', function(Contexts) {
   }
 
   this.all = function() {
+    /* Define the method to get all selectable entities for Site */
     return [
       {id: 1, street_number: '123', street_name: 'Magic Way', city: 'San Francisco', state: 'CA' },
       {id: 2, street_number: '456', street_name: 'JavaS Way', city: 'San Francisco', state: 'CA' }
@@ -180,6 +149,7 @@ module.service('Site', function(Contexts) {
   }
 
   this.current = function() {
+    /* Define the method to identify the currenly selected entity */
     return self.all().then(function(sites) {
       return Contexts.getOr('site', sites[0])
     })
@@ -191,7 +161,7 @@ module.service('Site', function(Contexts) {
 
 Once our `Services` are defined and wired together, any components or directives that inherit their contexts will be synchronized accordingly whenever anything related to the context is published or updated.
 
-To explain more concretely, any updates to `User` will delegate to `Site` and `Contact`, but they will also reach `Quote` beause `Quote` is related to `Site` which is related to `User`. Every controller, directive or component dependent on these contexts will also receive the udpates:
+For instance, any `select()` called to update `User` will clear data and re-delegate to `Site` and `Contact`, and will also clear `Quote` beause `Quote` is related to `Site` which is related to `User`. Every controller, directive or component dependent on these contexts will also receive the udpates.
 
 ```javascript
 module.directive('currentQuote', function(Contexts, Quote, $log) {
@@ -199,12 +169,29 @@ module.directive('currentQuote', function(Contexts, Quote, $log) {
     restrict: 'EA',
     template: '<h1>Selected Quote</h1><p>{{ quote | json }}</p>',
     controller: function(scope) {
-      // this callback will trigger whenever a new `User`, `Site`, or `Quote` is selected :D
+      /* Define a callback to be triggered whenever a new `User`, `Site`, or `Quote` is selected */
       Quote.use('current', function(quote) {
         $log.info('New quote selected', quote)
 
         scope.quote = quote
       })
+
+      scope.selectQuote(quote) {
+        /*
+         * Handle a user selection of a new quote in the UI.
+         * Will also publish the new entity and trigger the callback definied in the `use()` above
+         */
+        Quote.select(quote)
+      }
+
+      scope.updateQuoteCost(newCost) {
+        /*
+         * A sample controller function to update a property on an instance without publishing.
+         * Handle user update to a property via the UI.
+         */
+        var cost = newCost
+        Quote.modify({cost})
+      }
     }
   }
 })
@@ -230,7 +217,7 @@ import Current from 'ng-contexts'
 
 ```javascript
 import angular
-import Current from 'ng-contexts'
+import Contexts from 'ng-contexts'
 ```
 
 Then add it to your own module:
@@ -241,7 +228,7 @@ angular.module('myModule', ['ng-contexts'])
 
 ---
 
-If you aren't using a package tool like `webpack` or `browserify`, then you can of course fall back to the traditional method:
+If you aren't using a package tool like `webpack` or `browserify`, fall back to the traditional method:
 
 **Full**
 ```html
