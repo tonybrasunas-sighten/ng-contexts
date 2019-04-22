@@ -1,5 +1,13 @@
+# 1.1.5
+ - Improve documentation
+ - Rewrite README:
+    - Acknowledge updated code and changes in plug-in's focus after the fork.
+    - Document all exposed functions, including the 5 new ones.
+    - Remove (with link) extensive discussion of the problem `Contexts` is designed to solve
+    - Improve Example in the README and remove out of date example in the `demos` diretory
+
 # 1.1.4
- - Ensure `.clear()` will clear top level listeners unless told not to.
+ - Ensure `.clear()` will clear top level listeners (unless told not to).
 
 # 1.1.3
  - Cleanup export from `index.js` for applications that pre-check resolve

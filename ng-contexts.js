@@ -92,6 +92,31 @@
     }
 
     /**
+     * Updates the "current" entity instance relevant to the Service.
+     * If none can be found, log error and return false.
+     *
+     * @param {obj} updates - the data to add or amend on the entity
+     * @param {bool} publish - whether to initiate a publish
+     * @returns {obj} updated entity instance
+     */
+    this.modifying = function(service) {
+      return function(updates, publish = false) {
+        if (this.exists()) {
+          var current = this.selected()
+          var updated = Object.assign(current, updates)
+
+          if (publish) self.publish(service.name, updated)
+
+          return updated
+
+        } else {
+          $log.error('[ng-contexts.modifying] No selected data to modify found for service', service)
+          return false
+        }
+      }
+    }
+
+    /**
      * Creates an integration point where changes to the Service
      * are subscribed to and published hierarchically (single direction, down)
      * to any child Services. Nested publications occur transparently in their
@@ -100,13 +125,14 @@
      * Generally used for subscribing and synchronizing your scope bindings to changes
      * that occur in the appropriate Service context tree/sub-tree (single direction, down).
      *
-     * @param {Service} service angular service
+     * @param {Service} service - angular service
      * @returns {Function} usage point accepting an own property to react to (method) and a callback (andThen)
      */
     this.using = function(service) {
       return (function(method, andThen, defer) {
-        // invoke refresh immediately and then ensure that provided
-        // method is subscribed and refreshed w/ future updates to the service
+        /* Unless deferred, invoke refresh immediately and then ensure that provided
+         * method is subscribed and refreshed w/ future updates to the service.
+         */
         if (service.$$hasContext) {
           if (!defer) {
             service.refresh(method, andThen)
@@ -115,7 +141,7 @@
           self.subscribe(service.name, function(data) {
             service.refresh(method, andThen)
 
-            /* delegate subscribed changes to immediate related contexts (shallow) */
+            /* Delegate subscribed changes to immediate related contexts (shallow) */
             if (service.rels && service.rels.length) {
               service.rels.forEach(function(rel) {
                 self.publish(rel, data)
@@ -133,9 +159,9 @@
      * until all dependent states have been cleared. When not called
      * from select(), clear the context itself as well.
      *
-     * @param {string} name: service name
-     * @param {bool} clearSelf: whether to clear the calling context too
-     * @param {bool} clearListener: whether to clear $rootScope listeners for this context too
+     * @param {string} name - service name
+     * @param {bool} clearSelf - whether to clear the calling context too
+     * @param {bool} clearListener - whether to clear $rootScope listeners for this context too
      */
     this.clear = function(name, clearSelf = true, clearListener = true) {
       var rels = self.contexts[name] || []
@@ -162,11 +188,11 @@
      * Establishes a new current context for
      * a service by name/rel and publishes event
      *
-     * @param {string} name service name
-     * @param {*} data arbitrary data to select
-     * @param {boolean} [force] publish update even if the data is unchanged
-     * @param {boolean} [model] whether or not to apply model function against data
-     * @param {Object} object to use as representation of current state
+     * @param {string} name - service name
+     * @param {*} data - arbitrary data to select
+     * @param {boolean} force - publish update even if the data is unchanged
+     * @param {boolean} model - whether or not to apply model function against data
+     * @returns {Object} object to use as representation of current state
      */
     this.select = function(name, data, force, model) {
 
@@ -190,11 +216,10 @@
       return data
     }
 
-
     /**
      * Determines whether there is a selected context
      *
-     * @param {string} uuid
+     * @param {string} name
      * @returns {boolean}
      */
     this.existing = function(name, none = false) {
@@ -212,27 +237,6 @@
      */
     this.selected = function(name, none = false) {
       return this.currentOr(name, none)
-    }
-
-    /**
-     * Updates the "current" entity instance relevant to the Service
-     * If none can be found, log error and return false
-     *
-     * @param {obj} updates - the data to add or amend on the entity
-     * @param {bool} publish - whether to initiate a publish
-     * @returns {obj} updated entity instance
-     */
-    this.modifying = function(service) {
-      return function(updates, publish = false) {
-        if (this.exists()) {
-          var current = this.selected()
-          var updated = Object.assign(current, updates)
-
-          if (publish) self.publish(service.name, updated)
-
-          return updated
-        }
-      }
     }
 
     /**
