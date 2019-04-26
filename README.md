@@ -42,12 +42,22 @@ That's it, that's the minimum configuration needed. You'll likely want to establ
 #### Utilizing Exposed Functions
 Once your tree is configured and you want to begin storing and working with selected state, these functions will be useful. They may be called directly in the relevant service or via injecting the service (or the `Contexts` service) into your controllers.
 
-  - `this.select()` - Selects an entity for the context. If the entity's data is different from the existing selected data, this will publish to the tree and clear any nodes below it. Takes *data* (`Object`) param which will overwrite/add to the selected entity any properties included on the object. Additional *force* (`Boolean`) parameter will trigger a publish even if the data is not different.
-  - `this.use()` - Subscribes to a function and will execute a callback when the function's value changes. Similar to Angular's `$scope.$watch` in creating a subscription to a data entity. Takes a *name* (`Function`) param for the function to use to determine whether data has changed. Takes second *andThen* (`Function`) parameter which is the callback to be executed. Additional optional  *defer* (`Boolean`) param will prevent the callback from executing when the `use()` is first called.
-  - `this.modify()` - Update selected data for a context without subscribing or publishing. Avoids triggering updates to the tree. Takes *updates* (`Object`) param which will overwrite/add to the selected entity any properties included on the object. Additional  *publish* (`Boolean`) parameter will trigger publish of the entity to the tree.
+  - `this.select()` - Selects an entity for the context. If the entity's data is different from the existing selected data, this will publish to the tree and clear any nodes below it. 
+     - *data* (`Object`) **required** param overwrites/adds to the selected entity any properties included on the object.    
+     - *force* (`Boolean`) param triggers a publish even if the data is not different.
+  - `this.use()` - Subscribes to a function and will execute a callback when the function's value changes. Similar to Angular's `$scope.$watch` in creating a subscription to a data entity. 
+     - *name* (`Function`) **required** param for the function to use to determine whether data has changed. 
+     - *andThen* (`Function`) parameter which is the callback to be executed.
+     - *defer* (`Boolean`) param prevents the callback from executing when the `use()` is first called.
+  - `this.modify()` - Update selected data for a context without subscribing or publishing. Avoids triggering updates to the tree. 
+     - *updates* (`Object`) **required** param holds the data to overwrite/add to the selected entity
+     - *publish* (`Boolean`) param to request a publish of the entity to the tree.
   - `this.exists()` - Returns a simple boolean value if there is a selected entity for the context. *Note: Uses the `uuid` property to avoid false positives when functions have been added via `model()` but no entity is selected.*
-  - `this.get()` - Returns the selected entity. Takes a *name* (`String`) param to idenitfy the entity.
-  - `this.getOr()` - Returns the selected entity, or an alternative value if `exists()` is false. Takes a *name* (`String`) param to identify the entity, and a second parameter for what to return if `exists()` is false.
+  - `this.get()` - Returns the selected entity. 
+      - *name* (`String`) **required** param to idenitfy the entity.
+  - `this.getOr()` - Returns the selected entity, or an alternative value if `exists()` is false.
+      - *name* (`String`) **required** param to idenitfy the entity.
+      - *or* (any) param what to return if `exists()` is false.
   - `this.selected()` - Returns the selected data entity for the service. Doesn't need a parameter. Shorthand for `Contexts.get([context.name])`
   - `this.clear()` - Explicitly clear all `select()` data and `use()` subscriptions for the service.
 
