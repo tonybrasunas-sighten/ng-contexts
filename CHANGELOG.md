@@ -1,3 +1,7 @@
+# 1.1.6
+ - :mute: Enable removal of individual subscriptions via returning a _handle_ from the core subsciption method. This can then be invoked programmatically in a function, for instance, `$onDestroy()`, to remove a subscription set up via `use()` from listening.
+ - :sparkles: Establish `identifier` parameter for `register()` that names which property on each context is used to determine whether a context has selected data as well as whether the data has changed sufficiently to publish changes. Will still default to `uuid`, but can now be configured for each service or for the application.
+
 # 1.1.5
  - Improve documentation
  - Rewrite README:
@@ -18,9 +22,9 @@
  - Add handling for removing `$rootScope` listeners via `unsubscribe()` method
 
 # 1.1.0
- - Forked! :fork:
+ - Forked! :arrow_upper_left::arrow_upper_right:
  - New author! :pencil:
- - Rename to ng-contexts :tada:
+ - Rename: `ng-contexts` :tada:
 
 # 1.0.10
 

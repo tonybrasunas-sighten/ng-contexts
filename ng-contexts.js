@@ -35,6 +35,7 @@
     this.register = function(service) {
       this.contexts[service.name] = (service.rels  || [])
       this.models[service.name]   = (service.model || noop).bind(service)
+      this.identifier             = (service.identifier || 'uuid')
 
       service.select = function() {
         return self.select.apply(service, [service.name].concat(Array.prototype.slice.call(arguments)))
@@ -73,7 +74,7 @@
     this.refreshing = function(service) {
       return (function(method, andThen) {
         var generator = method instanceof Function ? method.call(service, service) : service[method].bind(service)
-        var model     = service.model || function(data) { return data }
+        var model     = service.model || noop
 
         if (generator instanceof Function) {
           $q.when(generator.call(service))
@@ -138,7 +139,7 @@
             service.refresh(method, andThen)
           }
 
-          self.subscribe(service.name, function(data) {
+          var subscription = self.subscribe(service.name, function(data) {
             service.refresh(method, andThen)
 
             /* Delegate subscribed changes to immediate related contexts (shallow) */
@@ -148,8 +149,12 @@
               })
             }
           })
+
+          return subscription
+
         } else {
           $log.error('[ng-contexts.using] malformed Service context, please ensure you have added `Contexts.register(this)` at the end of this service', service)
+          return false
         }
       }).bind(service)
     }
@@ -197,8 +202,9 @@
     this.select = function(name, data, force, model) {
 
       var old = $rootScope.current[name]
+      var id = self.identifier
 
-      /* Publish update if the current data has changed or forced */
+      /* Publish update if the current entity has changed, or if 'force' */
       if (!angular.equals(data, old) || force) {
         if (model) {
           data = self.models[name](data)
@@ -206,12 +212,12 @@
 
         $rootScope.current[name] = data
 
-        /* Clear related (and stale) contexts as new context becomes current */
-        self.clear(name, false, false)
+          /* Clear related (and stale) contexts as new context becomes current */
+          self.clear(name, false, false)
 
-        /* Publish new state to related contexts */
-        self.publish(name, data)
-      }
+          /* Publish new state to related contexts */
+          self.publish(name, data)
+        }
 
       return data
     }
@@ -225,8 +231,7 @@
     this.existing = function(name, none = false) {
       var current = this.currentOr(name, none)
 
-      /* @TODO More robust check than just truthiness of uuid */
-      return current && !!current.uuid
+      return current && !!current[this.identifier]
     }
 
     /**
@@ -287,9 +292,11 @@
      * @param {Function} on behavior to invoke on publication
      */
     this.subscribe = function(rel, on) {
-      $rootScope.$on(rel, function(event, data) {
+      var subscription = $rootScope.$on(rel, function(event, data) {
         on(data || {}, event)
       })
+
+      return subscription
     }
 
     /**
