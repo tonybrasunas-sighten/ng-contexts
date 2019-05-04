@@ -46,7 +46,7 @@ Once your tree is configured and you want to begin storing and working with sele
      - *name* (`Function`) **required** param for the function to use to determine whether data has changed.
      - *andThen* (`Function`) parameter which is the callback to be executed.
      - *defer* (`Boolean`) param prevents the callback from executing when the `use()` is first called.
-     - *returns* a function that can be invoked to cancel the subscription.
+     - *returns* a subscription function object with a `.stop()` that can be invoked to cancel the subscription. (Note that `.stop()` is simply an alias of the function object itself.)
   - `this.modify()` - Update selected data for a context without subscribing or publishing. Avoids triggering updates to the tree.
      - *updates* (`Object`) **required** param holds the data to overwrite/add to the selected entity
      - *publish* (`Boolean`) param to request a publish of the entity to the tree.
@@ -58,6 +58,7 @@ Once your tree is configured and you want to begin storing and working with sele
       - *none* (any) parameter for what to return if `exists()` is false.
   - `this.selected()` - Returns the selected data entity for the service. Doesn't need a parameter. Shorthand for `Contexts.get([context.name])`
   - `this.clear()` - Explicitly clear all `select()` data and `use()` subscriptions for the service.
+  - `this.clearSubscriptions()` - Explicitly clear `use()` subscriptions for the service while leaving selected contexts and data in place.
 
 
 ## Example
