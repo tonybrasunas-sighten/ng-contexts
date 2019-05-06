@@ -173,7 +173,8 @@
      *
      * @param {string} name - service name
      * @param {bool} clearSelf - whether to clear the calling context too
-     * @param {bool} clearListener - whether to clear $rootScope listeners for this context too
+     * @param {bool} clearListener - whether to clear $rootScope listeners for this context
+     * @param {bool} clearData - whether to clear data for this context
      */
     this.clear = function(name, clearSelf = true, clearListener = true, clearData = true) {
       var rels = self.contexts[name] || []
