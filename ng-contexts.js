@@ -57,6 +57,10 @@
         return self.clear(service.name)
       }
 
+      service.clearSubscriptions = function() {
+        return self.clear(service.name, true, true, false)
+      }
+
       service.$$hasContext = true
 
       $rootScope.current[name] = {}
@@ -150,6 +154,9 @@
             }
           })
 
+          /* Expose intuitive 'stop()' for killing subscription */
+          subscription.stop = subscription
+
           return subscription
 
         } else {
@@ -166,24 +173,25 @@
      *
      * @param {string} name - service name
      * @param {bool} clearSelf - whether to clear the calling context too
-     * @param {bool} clearListener - whether to clear $rootScope listeners for this context too
+     * @param {bool} clearListener - whether to clear $rootScope listeners for this context
+     * @param {bool} clearData - whether to clear data for this context
      */
-    this.clear = function(name, clearSelf = true, clearListener = true) {
+    this.clear = function(name, clearSelf = true, clearListener = true, clearData = true) {
       var rels = self.contexts[name] || []
       rels.forEach(function(rel) {
-        delete $rootScope.current[rel]
+        if (clearData) delete $rootScope.current[rel]
         if (clearListener) self.unsubscribe(rel)
 
         var next = self.contexts[rel]
 
         if (next instanceof Array && next.length) {
           next.forEach(function(childRel) {
-            self.clear(childRel, clearSelf, clearListener)
+            self.clear(childRel, clearSelf, clearListener, clearData)
           })
         }
       })
 
-      if (clearSelf) delete $rootScope.current[name]
+      if (clearSelf && clearData) delete $rootScope.current[name]
 
       if (clearListener) self.unsubscribe(name)
 

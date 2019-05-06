@@ -1,3 +1,7 @@
+# 1.1.7
+ - :smile: Attach a convenience `.stop()` function to the subscription handle added in 1.1.6, for more easily followable code to stop a subscription (`this.projectSubscription()` vs `this.projectSubscription.stop()`).
+ - :sparkles: New `clearSubscriptions()` function to clear all subscriptions for a context while leaving selected data tree intact.
+
 # 1.1.6
  - :mute: Enable removal of individual subscriptions via returning a _handle_ from the core subsciption method. This can then be invoked programmatically in a function, for instance, `$onDestroy()`, to remove a subscription set up via `use()` from listening.
  - :sparkles: Establish `identifier` parameter for `register()` that names which property on each context is used to determine whether a context has selected data as well as whether the data has changed sufficiently to publish changes. Will still default to `uuid`, but can now be configured for each service or for the application.
